@@ -1,0 +1,159 @@
+---
+title: "Abgabe3"
+author: "Jonas Benischek"
+date: "2022-14-11"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+## Hello R and GitHub submission
+
+##### MANDANTORY: Definieren des Stammordners 
+rootDIR = "C:/Datenanalyse/UsingR/Unit3/"
+
+#############################################################################
+#1. Lesen Sie die in der Excel-Datei bereitgestellten Daten und "isolieren" 
+#Sie die tabellarischen Informationen in einer data.frame-Klasse.
+
+```{r}
+
+df <- read.table("/Users/Jonas/Documents/Datenanalyse/UsingR/Unit3/hessen_holzeinschlag_1997-2014.csv",
+                 skip = 4, header = TRUE, sep = ";", dec = ",",encoding = "latin1")
+
+str(df) #Ansicht in der Console
+```
+##############################################################################
+#2. Erstellen Sie eine einfache Visualisierung, die einen schnellen, zeitlich 
+#nicht expliziten und deskriptiven statistischen Überblick über die Ernte nach 
+#Baumtyp und als Summe über alle Bäume gibt (d.h. eine ähnliche Art von 
+#Informationen wie die Zusammenfassungsfunktion).
+```{r}
+summary.data.frame(df) #Zusammenfassung in der Console
+
+#Visualisierung mit einem Boxplot von allen Baumtypen
+
+print(df) #Zeilen 2 bis 6 müssen ausgewählt werden
+
+####################################################
+#Visualisierung mit einem Boxplot für alle Baumtypen
+boxplot(df[, 2:6]) #Zeilen 2 bis 6 auswählen
+
+###########################################################
+#Visualisierung mit einem Boxplot für die Summe aller Bäume
+
+boxplot(df[, 7]) #Zeile 7 auswählen
+```
+###############################################################################
+#3.Erstellen Sie eine weitere Visualisierung, die - im gleichen Abbildungsfeld - 
+#zeigt, wie jede Buchenernte über die Zeitspanne mit jeder der Eichen-, 
+#Kiefern-, Fichten- und farbigen Holzernten in einem 2 x 2-Raster 
+#zusammenhängt (dh die Zahlen in einem 2-Spalten- und 2-Zeilen-Layout anordnen).
+################################################################################
+```{r}
+
+
+library(ggplot2)
+
+###################################################################################################
+
+
+
+library(Rmisc)
+
+####################################################################################################
+
+colors1 <- c("Buche" = "black", "Eiche" = "red")
+plot1 <- ggplot()+
+  ggtitle("Buche und Eiche")+
+  labs(x = "Jahr", y = "Anzahl", color = "Legend")+
+  geom_line(df, mapping =aes(x = FWJ, y = Buche, color = "Buche"))+
+  geom_line(df, mapping =aes(x = FWJ, y = Eiche, color = "Eiche"))+
+  scale_color_manual(values = colors1)
+
+colors2 <- c("Buche" = "black", "Fichte" = "blue")
+plot2 <- ggplot()+
+  ggtitle("Buche und Fichte")+
+  labs(x = "Jahr", y = "Anzahl", color = "Legend")+
+  geom_line(df, mapping =aes(x = FWJ, y = Buche, color = "Buche"))+
+  geom_line(df, mapping =aes(x = FWJ, y = Fichte, color = "Fichte"))+
+  scale_color_manual(values = colors2)
+
+colors3 <- c("Buche" = "black", "Buntholz" = "yellow")
+plot3 <- ggplot()+
+  ggtitle("Buche und Buntholz")+
+  labs(x = "Jahr", y = "Anzahl", color = "Legend")+
+  geom_line(df, mapping =aes(x = FWJ, y = Buche, color = "Buche"))+
+  geom_line(df, mapping =aes(x = FWJ, y = Buntholz, color = "Buntholz"))+
+  scale_color_manual(values = colors3)
+
+colors4 <- c(" Buche" = "black", "Kiefer" = "orange")
+plot4 <- ggplot()+
+  ggtitle("Buche und Kiefer")+
+  labs(x = "Jahr", y = "Anzahl", color = "Legend")+
+  geom_line(df, mapping =aes(x = FWJ, y = Buche, color = "Buche"))+
+  geom_line(df, mapping =aes(x = FWJ, y = Kiefer, color = "Kiefer"))+
+  scale_color_manual(values = colors4)
+
+Rmisc::multiplot(plot1, plot2, plot3, plot4, cols = 2)
+```
+
+###############################################################################
+#4.Ihre Meinung zur Kernaussage dieser Zahlen, in maximal zwei Sätzen 
+###############################################################################
+
+```{r}
+#Die Kernaussage 
+#zum Datensatz Holzeinschlag in Hessen von 1997-2014 beinhaltet das
+#Verhältnis der Buchen zu den anderen Baumarten, wenn man dieses zusätzlich mit 
+#Gesamtanzahl abgleicht (siehe Multiples Liniendiagramm) fällt erneut deutlich auf, dass 
+#die Anzahl der gefällten Fichten hierbei signifikant hervorsticht.
+
+
+# Eine passende Hypothese dazu könnte lauten: 
+# Der Orkan Kyrill verursachte am 18.und 19.Januar 2007 weitreichende Sturmschäden 
+# auch in den hessischen Wäldern. 
+# Aufgrund der bevorzugten Standortwahl der Fichten auf Bergrücken, wurden 
+# diese ganz besonders in Mitleidenschaft gezogen. Da Fichten Flachwurzler sind und in  
+# einer Monokultur oft in exponierten Lagen angepflanzt wurden, konnte der Sturm 
+# weitreichende Schäden verursachen. Diese Sturmschäden mussten von der Forstwirschaft 
+# aufgearbeitet werden, daher dieser enorme Ausschlag in der Darstellung. 
+
+
+###########################################################################################
+#Multiples Liniendiagramm 
+
+ggplot()+
+  ggtitle("Der Holzeinschlag in Hessen von 1997-2014")+
+  
+  
+  geom_point(data = df, mapping = aes(x=FWJ, y=Insgesamt), color="black")+ #Alle Bäume in schwarz
+  geom_point(data = df, mapping = aes(x=FWJ, y=Buche), color="green")+     #Buchen in grün
+  geom_point(data = df, mapping = aes(x=FWJ, y=Eiche), color="red")+       #Eichen in rot
+  geom_point(data = df, mapping = aes(x=FWJ, y=Fichte), color="blue")+     #Fichten in blau
+  geom_point(data = df, mapping = aes(x=FWJ, y=Buntholz), color="yellow")+ #Buntholz in gelb
+  geom_point(data = df, mapping = aes(x=FWJ, y=Kiefer), color="orange")+
+  
+  geom_line(data = df, mapping = aes(x=FWJ, y=Insgesamt), color="black")+ #Alle Bäume in schwarz
+  geom_line(data = df, mapping = aes(x=FWJ, y=Buche), color="green")+     #Buchen in grün
+  geom_line(data = df, mapping = aes(x=FWJ, y=Eiche), color="red")+       #Eichen in rot
+  geom_line(data = df, mapping = aes(x=FWJ, y=Fichte), color="blue")+     #Fichten in blau
+  geom_line(data = df, mapping = aes(x=FWJ, y=Buntholz), color="yellow")+ #Buntholz in gelb
+  geom_line(data = df, mapping = aes(x=FWJ, y=Kiefer), color="orange")+  #Kiefern in orange
+  
+  labs(x = "Jahr", y = "Anzahl", color = "Legend")
+
+#################################################################################################
+```
+
+
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
