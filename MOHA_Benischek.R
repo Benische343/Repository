@@ -1,0 +1,345 @@
+
+
+#------------------------------------------------------------------------------
+# MOHA Abgabe
+# Verfasser:Jonas Benischek
+# Matrikelnummer: 3690482
+#------------------------------------------------------------------------------
+
+
+########
+# Links:
+
+# MOHA
+# https://geomoer.github.io/moer-mpg-data-analysis/unit11/unit11-01_link-MOHA.html
+
+# Hilfestellungen:
+# https://geomoer.github.io/moer-base-r/unit01/unit01-01_Intro.html
+
+# Alle Units:
+# https://geomoer.github.io/moer-mpg-data-analysis/units.html
+
+
+#####################################################################
+# MANDANTORY: Definieren des Stammordners / Diese Zeile NICHT ändern
+rootDIR = "C:/Datenanalyse/UsingR/MOHA/"
+
+########################
+# 01 MOHAfun() iterieren
+# Aufgabe 1.1
+#Implementieren Sie eine Funktion namens "größer", wenn die als Variable 
+#angegebene Zahl größer als Ihre Matrikelnummer ist. "Gleich", wenn die als 
+#Variable angegebene Nummer Ihre Matrikelnummer ist, und "Kleiner", wenn die 
+#als Variable angegebene Nummer kleiner ist als Ihre Matrikelnummer.MOHAfun()xxx
+
+n <- 4690482 #"größer"
+
+if (n > 3690482) {
+  print ("larger")
+} else if (n == 3690482) {
+  print("equal")
+} else {
+  print("smaller")
+}
+
+########################
+# 01 MOHAfun() iterieren
+# Aufgabe 1.2
+#Fügen Sie in eine for-Schleife ein, die in einem Intervall von 9 ganzzahligen 
+#Zahlen um Ihre Matrikelnummer iteriert. Zeigen Sie die Ergebnisse an.MOHAfun()x
+
+vector <- vector()
+
+for(n in c(1,3690482,2,3,4,5,6,7,8,9)){
+  if(n > 3690482) {
+    vector <- append(vector, "larger")
+  } else if(n == 3690482) {
+    vector <- append(vector, "equal")
+  } else {
+    vector <- append(vector, "smaller")
+  }}
+
+print(vector)
+
+###################################################################################
+# 01 MOHAfun() iterieren
+# Aufgabe 1.3
+# Ändern Sie die oben erzeugte Schleife so, dass die Iteration von einem lapply und 
+# nicht von einer for-Schleife gesteuert wird. Speichern Sie die von der Funktion 
+# zurückgegebenen Informationen in einer Variablen und drucken Sie den Inhalt dieser 
+# Variablen nach der Schleife.lapply
+
+list2 <- list()
+
+variable <- lapply(seq_along(c(1,3690482,2,3,4,5,6,7,8,9)), function(x) {
+  a <- c(1,3690482,2,3,4,5,6,7,8,9)[[x]]
+  if(a > 3690482) {
+    return(list2 <- append(list2, "larger"))
+  } else if(a == 3690482) {
+    return(list2 <- append(list2, "equal"))
+  } else {
+    return(list2 <- append(list2, "smaller"))
+  }
+})
+
+print(variable)
+
+
+#######################################################################################
+# 01 MOHAfun() iterieren
+# Aufgabe 1.4
+# Passen Sie an, indem Sie anstelle Ihrer Matrikelnummer als zusätzliches Argument 
+# hinzufügen, um einen Vergleich mit jeder Eingabe zu ermöglichen.MOHAfun()yx
+
+variable <- lapply(seq_along(c(1,3690482,2,3,4,5,6,7,8,9)), function(x) {
+  a <- c(1,3690482,2,3,4,5,6,7,8,9)[[x]]
+  if(a > 3690482) {
+    return(list2 <- append(list2, "larger"))
+  } else if(a == 3690482) {
+    return(list2 <- append(list2, "equal"))
+  } else {
+    return(list2 <- append(list2, "smaller"))
+  }
+})
+
+variable2 <- unlist(variable)
+
+print(variable2)
+
+
+######################
+# 02 Kreuzvalidierung
+# Verwenden Sie das lu_clean.rds-Dataset aus dem Kurs für die folgenden Übungen. 
+# Der Datensatz befindet sich auch im Ordner "data" in Ilias.
+
+#############
+# Daten Laden 
+
+df <- readRDS("lu_clean.rds")
+
+str(df) #Ansicht in der Console
+
+#######################################
+# Individuelle Ergebnisse zu erstellen:
+
+# Start with a clean workspace
+rm(list=ls(all=TRUE))	
+
+# Set your individual information
+matriculationnumber <- 3690482
+lastname <- "Benischek"
+
+# Read in the original data
+lu <- readRDS("lu_clean.rds")
+
+# Individual modifications
+set.seed(matriculationnumber)
+lu[paste("Agriculture", lastname, sep="_")] <- abs(jitter(lu$Agriculture, amount = matriculationnumber/10^6))
+lu[paste("Settlement", lastname, sep="_")] <- abs(jitter(lu$Settlement, amount = matriculationnumber/10^6))
+lu$Agriculture <- NULL; lu$Settlement <- NULL
+
+# Create an individual dataset object for this topic
+assign(paste("lu", lastname, sep="_"), lu[sample(nrow(lu), nrow(lu) - 99),]); rm(lu)
+
+# Now start working with your individual dataset called
+paste("lu", lastname, sep="_")
+
+
+
+######################################################################################
+# 02 Kreuzvalidierung
+# Aufgabe 2.1
+# Schreiben Sie eine Funktion für eine Leave-many-out-Kreuzvalidierung, 
+# die 75% der Daten für das Training und den Rest für Tests verwendet. 
+# Geben Sie den mittleren quadratischen Fehler zwischen Vorhersage und 
+# Beobachtung von 90 Iterationen mit jeweils unabhängig abgetasteten Daten 
+# als Funktionsausgabe an
+
+lmod <- lm(y1 ~ x1, data = anscombe)
+
+plot(anscombe$x1, anscombe$y1)
+abline(lmod, col = "red")
+
+
+anova(lmod)
+
+range <- nrow(anscombe)
+nbr <- nrow(anscombe) * 0.75
+
+cv_sample <- lapply(seq(90), function(i){
+  set.seed(i)
+  smpl <- sample(range, nbr)
+  train <- anscombe[smpl,]
+  test <- anscombe[-smpl,]
+  lmod <- lm(y1 ~ x1, data = train)
+  pred <- predict(lmod, newdata = test)
+  obsv <- test$y1
+  resid <- obsv - pred
+  ss_obsrv <- sum((obsv - mean(obsv))**2)
+  ss_model <- sum((pred - mean(obsv))**2)
+  ss_resid <- sum((obsv - pred)**2)
+  mss_obsrv <- ss_obsrv / (length(obsv) - 1)
+  mss_model <- ss_model / 1
+  mss_resid <- ss_resid / (length(obsv) - 2)
+  data.frame(pred = pred,
+             obsv = obsv,
+             resid = resid,
+             ss_obsrv = ss_obsrv,
+             ss_model = ss_model,
+             ss_resid = ss_resid,
+             mss_obsrv = mss_obsrv,
+             mss_model = mss_model,
+             mss_resid = mss_resid,
+             r_squared = ss_model / ss_obsrv
+  )
+})
+cv_sample <- do.call("rbind", cv_sample)
+
+ss_obsrv <- sum((cv_sample$obsv - mean(cv_sample$obsv))**2)
+ss_model <- sum((cv_sample$pred - mean(cv_sample$obsv))**2)
+ss_resid <- sum((cv_sample$obsv - cv_sample$pred)**2)
+
+mss_obsrv <- ss_obsrv / (length(cv_sample$obsv) - 1)
+mss_model <- ss_model / 1
+mss_resid <- ss_resid / (length(cv_sample$obsv) - 2)
+
+
+
+data.frame(NAME = c("cross validation F value",
+                    "linear model F value", 
+                    "cross validation r squared",
+                    "linear model r squared"),
+           VALUE = c(round(mss_model / mss_resid, 2),
+                     round(anova(lmod)$'F value'[1], 2),
+                     round(1 - ss_resid / ss_obsrv, 2),
+                     round(summary(lmod)$r.squared, 2)))
+
+
+#NAME  VALUE
+#1   cross validation F value 413.77
+#2       linear model F value  17.99
+#3 cross validation r squared   0.52
+#4     linear model r squared   0.67
+
+
+
+######################################################################################
+# 02 Kreuzvalidierung
+# Aufgabe 2.2
+# Fügen Sie eine Visualisierung hinzu, die Informationen über die Verteilung des 
+# mittleren quadratischen Fehlers auf die verschiedenen Kreuzvalidierungsläufe liefert.
+
+
+#Visualisierung mit einem Boxplot 
+boxplot(lu_Benischek[, 7:9]) 
+
+
+######################################################################################
+# 02 Kreuzvalidierung
+# Aufgabe 2.3
+# Schreiben Sie bis zu 50 Wörter, die die Ergebnisse interpretieren.
+
+
+
+
+######################################################################################
+# 02 Kreuzvalidierung
+# Aufgabe 2.4
+# Berechnen Sie die durchschnittliche Siedlungsfläche pro Verwaltungseinheit und Jahr 
+# durch Aggregation.
+
+
+
+######################################################################################
+# 02 Kreuzvalidierung
+# Aufgabe 2.5
+#Verwenden Sie das obige aggregierte Dataset, um für jede Verwaltungseinheit zu testen, 
+#ob der Prozentsatz der Siedlungsfläche im Laufe der Zeit zugenommen hat. Besonders
+#einfache lineare Modelle mit "Jahr" als Prädiktor berechnen und die Anzahl der 
+#positiven und negativen Steigungen zählen (kümmern Sie sich hier NICHT um 
+#Anforderungen an lineare Modelle und Signifikanz), und Erstellen Sie für jede 
+#Verwaltungseinheit Streudiagramme mit Regressionslinien (blau für negative Steigung, 
+#rot für positive Steigung) und stellen Sie diese in einer einzigen Abbildung dar.
+
+
+
+
+######################################################################################
+# 03 Funktionsauswahl
+#Machen Sie sich mit dem Dataset vertraut, bei dem es sich um ein integriertes Dataset 
+#in R handelt, und verwenden Sie es für die folgenden Übungen. Wenden Sie die 
+#folgenden Änderungen auf dieses Dataset an, um individuelle Ergebnisse zu erstellen:
+#iris
+
+# Start with a clean workspace
+rm(list=ls(all=TRUE))	
+
+# Set your individual information
+matriculationnumber <- 3690482
+lastname <- "Benischek"
+
+# Create an individual dataset object for this topic
+set.seed(3690482)
+
+iris <- iris
+for(i in colnames(iris)){
+  if(is.numeric(iris[,i]) == TRUE)  {
+    iris[,paste(i, lastname, sep = "_")] <- abs(jitter(iris[,i], amount = matriculationnumber/10^7))
+    iris[,i] <- NULL
+  } else 
+    iris[,i] <- iris[,i]
+}
+
+# Create an individual dataset object for this topic
+assign(paste("iris", lastname, sep="_"), iris[sample(nrow(iris), nrow(iris) - 5),]); rm(iris)
+
+# Now start working with your individual dataset called
+paste("iris", lastname, sep="_")
+
+
+######################
+# 03 Funktionsauswahl
+#Aufgabe 3.1
+#Schreiben Sie eine R-Funktion, die einen Vorwärts-Feature-Auswahlansatz für 
+#ein multiples lineares Regressionsmodell implementiert. 
+#Die Funktion sollte die Informationskriterien Adjusted-R-squared und Akaike als 
+#Leistungsmaße haben.
+
+
+###############
+#04 Zeitreihen
+#Finden Sie eine Station des Deutschen Wetterdienstes (DWD) mit stündlichen 
+#Niederschlagswerten in der Nähe Ihrer Heimatstadt und nutzen Sie deren Daten 
+#für diese Übung. Zur Orientierung, diese Karte des DWD hilft Ihnen weiter. 
+#Sobald Sie die Stations-ID herausgefunden haben, können Sie die Daten wie im Kurs 
+#herunterladen. Wenn Ihre Heimatstadt in der Nähe von Marburg liegt, Verwenden Sie 
+#Cölbe nicht, sondern wählen Sie eine beliebige Wetterstation mit den letzten beiden 
+#Ziffern Ihrer Matrikelnummer irgendwo in ihrer Stations-ID.
+
+###############################################################################
+# Aufgabe 4.1
+# Geben Sie den Namen und die ID Ihrer ausgewählten Wetterstation an.
+
+# Name: Amöneburg-Rüdigheim  
+
+# Stations-ID 00158
+
+                   
+
+###################################################################################
+# Aufgabe 4.2
+# Finden Sie ein ARIMA-Modell zur Vorhersage monatlicher Niederschlagsdaten. 
+# Das Modell sollte auf der Grundlage seiner Fähigkeit ausgewählt werden, die anhand 
+# des mittleren quadratischen Fehlers zur Vorhersage der letzten zwei Jahre der 
+# bereitgestellten Zeitreihe Ihrer Station gemessen wird.
+
+
+#Autoregressive integrierte gleitende Durchschnittsmodelle (ARIMA)
+
+df <- read.table("/Users/Jonas/Documents/Datenanalyse/UsingR/MOHA/produkt_rr_stunde_20210723_20230123_00158.txt",
+                 skip = 4, header = TRUE, sep = ";", dec = ",",encoding = "latin1")
+
+str(df) #Ansicht in der Console
+
+
+
